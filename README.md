@@ -45,6 +45,99 @@ After establishing a connection, clients can send and receive data using send() 
 
 ## Use Cases of Socket Programming:
 Socket programming finds applications in various domains, including web development, file transfer protocols, online gaming, and real-time communication. It is the foundation for protocols like HTTP, FTP, and SMTP, which power the internet. Socket programming enables the development of both server and client applications, facilitating the exchange of information between devices in a networked environment.
+Program
+```
+import socket
+import threading
+import time
+
+HOST = "127.0.0.1"
+PORT = 5002
+
+
+# -------------------- SERVER --------------------
+def server():
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    # Allow reuse of same port
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+    s.bind((HOST, PORT))
+    s.listen(1)
+
+    print("Server is waiting for connection...")
+
+    conn, addr = s.accept()
+    print("Connected by:", addr)
+
+    count = 0
+
+    while count < 3:
+        data = conn.recv(1024).decode()
+
+        if not data:
+            print("Client disconnected.")
+            break
+
+        print("Client says:", data)
+
+        reply = input("Server reply: ")
+        conn.send(reply.encode())
+
+        count += 1
+
+    print("Server is ending...")
+
+    conn.send("Server is end.".encode())
+
+    conn.close()
+    s.close()
+
+
+# -------------------- CLIENT --------------------
+def client():
+    time.sleep(1)  # Wait for server to start
+
+    c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    # Retry connection until server is ready
+    while True:
+        try:
+            c.connect((HOST, PORT))
+            print("Client connected to server.")
+            break
+        except ConnectionRefusedError:
+            print("Waiting for server...")
+            time.sleep(1)
+
+    while True:
+        message = input("Client message: ")
+        c.send(message.encode())
+
+        response = c.recv(1024).decode()
+
+        if response.lower() == "server is end.":
+            print(response)
+            break
+
+        print("Server says:", response)
+
+    c.close()
+
+
+# -------------------- THREADS --------------------
+server_thread = threading.Thread(target=server)
+client_thread = threading.Thread(target=client)
+
+server_thread.start()
+client_thread.start()
+
+server_thread.join()
+client_thread.join()
+
+print("Chat closed successfully.")
+
+```
 ## Example Use Cases:
 
 1.	Web servers: Web servers use socket programming to handle incoming HTTP requests from clients, serving web pages and content.
@@ -52,6 +145,10 @@ Socket programming finds applications in various domains, including web developm
 3.	File Transfer Protocol: Protocols like FTP (File Transfer Protocol) utilize socket programming for transferring files between a client and a server.
 4.	Networked Games: Online multiplayer games rely on socket programming to facilitate communication between game clients and servers.
 5.	RPC mechanisms: which allow processes to execute code on a remote server, often use socket programming for communication.
+6.	<img width="1908" height="1067" alt="Screenshot 2026-05-13 150118" src="https://github.com/user-attachments/assets/fb5ecdc0-704b-44b1-977e-caa30366fdaf" />
+<img width="1919" height="1065" alt="Screenshot 2026-05-13 150138" src="https://github.com/user-attachments/assets/19883361-6333-460f-9646-0af12f9a442f" />
+<img width="1912" height="1065" alt="Screenshot 2026-05-13 150151" src="https://github.com/user-attachments/assets/aa710fd5-abfc-4357-9b02-189acbea4d50" />
+
 
 
 ## Result:
